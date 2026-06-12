@@ -1,0 +1,8 @@
+{
+  "name": "earthlift-soil-dec-hub-cloudflare",
+  "private": true,
+  "version": "2026.06.12",
+  "scripts": {
+    "deploy:note": "echo Deploy through Cloudflare Pages Git integration with output directory public"
+  }
+}

@@ -1,0 +1,23 @@
+Soil Dec Hub Cloudflare Migration Checklist
+
+1. Put this folder into a GitHub repo.
+2. Create a Cloudflare Pages app connected to that repo.
+3. Use build output directory: public.
+4. Deploy and open the pages.dev URL.
+5. Confirm the status shows Hub ready.
+6. Optional: add KV binding SOIL_DEC_KV.
+7. Optional: add R2 binding SOIL_REPORTS_R2.
+8. Test that settings and search work.
+9. Rebuild each sender backend:
+   - Harkaway
+   - URM
+   - Landfix
+   - Daisy's
+   - ESG
+   - LTE / Monk
+   - Galcon
+   - Scope
+   - Hanson / Heidelberg
+   - LandformX
+   - Antech
+10. Once sender backends are confirmed, remove the old Windows startup dependency.

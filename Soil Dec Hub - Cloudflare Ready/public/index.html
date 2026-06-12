@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Earthlift Soil Declaration Hub</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="shortcut icon" type="image/png" href="assets/favicon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="assets/earthlift-logo.png" alt="Earthlift" />
+          <div class="brand-copy">
+            <h1>Soil Declaration Hub</h1>
+            <span class="version-pill">v2026.06.10.1</span>
+          </div>
+        </div>
+        <div id="connectionStatus" class="status-pill">Starting...</div>
+      </header>
+
+      <form id="hubForm" class="stack">
+        <section class="panel job-panel">
+          <div class="section-head">
+            <h2>Job Details</h2>
+            <button id="pasteJobButton" class="inline-action header-action" type="button" disabled>Paste Job</button>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              <span>Completed by</span>
+              <select id="submitterId" name="submitterId"></select>
+            </label>
+
+            <label>
+              <span>Customer job number</span>
+              <input id="jobNumber" name="jobNumber" required autocomplete="off" />
+            </label>
+
+            <label>
+              <span>Principal Contractor</span>
+              <input id="principalContractor" name="principalContractor" required autocomplete="organization" />
+            </label>
+
+            <label class="wide">
+              <span>Job address</span>
+              <input id="jobAddress" name="jobAddress" required autocomplete="street-address" placeholder="Example: 11 Galanthus Street Charlemont VIC 3217" />
+            </label>
+
+            <label>
+              <span>Volume / quantity (m3)</span>
+              <input id="volume" name="volume" type="number" min="0.1" step="0.1" required />
+            </label>
+
+            <label>
+              <span>PDF email action</span>
+              <select id="emailAction" name="emailAction">
+                <option value="send">Send automatically</option>
+                <option value="draft">Save Outlook drafts</option>
+              </select>
+            </label>
+
+            <label id="reportPathWrap" class="wide hidden">
+              <span>Attach soil report for Daisy's</span>
+              <input id="reportFile" name="reportFile" type="file" accept=".pdf,application/pdf" />
+            </label>
+          </div>
+
+          <div class="switch-block">
+            <div>
+              <strong>Demolition activities on site</strong>
+              <p>This answer is pushed into every declaration that asks for it.</p>
+            </div>
+            <div class="segmented">
+              <label><input type="radio" name="demolition" value="No" checked /><span>No</span></label>
+              <label><input type="radio" name="demolition" value="Yes" /><span>Yes</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel site-panel">
+          <div class="section-head">
+            <h2>Tip Sites</h2>
+          </div>
+
+          <div id="siteGrid" class="site-grid"></div>
+
+          <div class="site-options">
+            <label id="esgOption" class="hidden">
+              <span>ESG tip site</span>
+              <select id="esgSiteId" name="esgSiteId">
+                <option value="85">VIC - ESG Wollert</option>
+                <option value="87">VIC - ESG Deer Park</option>
+                <option value="66">VIC - ESG Toolern Vale</option>
+                <option value="2">VIC - ESG Waurn Ponds</option>
+              </select>
+            </label>
+
+            <label id="lteOption" class="hidden">
+              <span>LTE / Monk destination</span>
+              <select id="lteDestination" name="lteDestination">
+                <option value="LTE Langwarrin - Soil">LTE Langwarrin - Soil</option>
+                <option value="LTE Langwarrin - Fill">LTE Langwarrin - Fill</option>
+              </select>
+            </label>
+          </div>
+
+          <button id="sendButton" class="send-button" type="submit">Send selected declarations</button>
+        </section>
+      </form>
+
+      <section class="search-strip">
+        <label>
+          <span>Search completed declarations</span>
+          <input id="searchInput" autocomplete="off" placeholder="Search by job number, address, or tip site" />
+        </label>
+        <div id="searchResults" class="search-results"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
