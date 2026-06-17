@@ -1,63 +1,84 @@
-# EarthLift Soil Declaration Hub - Cloudflare Ready Copy
+# Earthlift Soil Declaration Hub - Cloudflare Package
 
-This folder is a Cloudflare Pages-ready copy of the Soil Declaration Hub.
+This folder is the cloud version of the Earthlift Soil Declaration Hub. It is separate from the laptop `.bat` version, so the existing local sender can keep being used while the cloud sender is rebuilt.
 
-It is separate from the local working copy:
+## What Works
+
+- The hub UI loads from Cloudflare Pages.
+- `/api/health` returns submitters, tip sites, settings, and the deployed version.
+- `admin.html` gives Alan a browser screen for editing tip sites once D1 is connected.
+- `/api/completions` can search completed declarations after D1 is connected.
+- `/api/upload-report` can store report PDFs after R2 is connected.
+- `/api/submit` records requests in D1 after D1 is connected, but live sending is still intentionally disabled until each cloud sender is rebuilt.
+
+## Important Limitation
+
+The current production hub still sends declarations using Windows-only local tools:
+
+- hidden browser sender scripts on this computer
+- local `T:\DRIVERS AND TIP CODES\Programs\Soil Dec` files
+- Outlook/PDF email automation
+
+Cloudflare cannot run those Windows desktop automations directly. The cloud version must rebuild each sender using Cloudflare-safe services, starting with URM.
+
+## Cloudflare Services Needed
+
+- Cloudflare Pages for the website and Functions.
+- Cloudflare D1 with binding name `DB`.
+- Cloudflare R2 with binding name `REPORTS`.
+- Cloudflare Access to limit the app to approved Earthlift users.
+- Cloudflare Browser Run later, for the actual site sender automation.
+
+## Database Setup
+
+Create a D1 database, then run `migrations/0001_cloud_foundation.sql` against it.
+
+The Pages project needs this binding:
 
 ```text
-C:\EarthLift Apps\Soil Dec Hub
+Variable/binding name: DB
+Service: D1 database
+Database: the database you created
 ```
 
-## What works in this Cloudflare-ready copy
+## Report Storage Setup
 
-- The browser app can be hosted by Cloudflare Pages.
-- The existing `/api/health`, `/api/completions`, `/api/settings`, `/api/upload-report`, and `/api/submit` routes have matching Pages Functions.
-- The app no longer needs a Windows startup script just to open the page.
-- Settings and completed declarations can persist if a Cloudflare KV binding is added.
-- Uploaded Daisy reports can be stored if an R2 binding is added.
-
-## What still needs backend migration
-
-The old local version starts separate sender scripts for Harkaway, URM, Landfix, Daisy's, ESG, LTE / Monk, Galcon, and Scope. Those local sender scripts are not automatically Cloudflare-compatible.
-
-In this copy, `/api/submit` captures the request and marks each selected site as `Queued` rather than performing the real external submission.
-
-The remaining backend work is to rebuild each sender as either:
-
-- Cloudflare Worker / Pages Function, if it is a simple HTTP/API workflow.
-- Google Cloud Run / Google Compute Engine, if it needs browser automation, fixed IP, Outlook/desktop behavior, or company-system allowlisting.
-
-## Cloudflare Pages setup
-
-In Cloudflare:
-
-1. Go to Workers & Pages.
-2. Create application.
-3. Choose Pages.
-4. Connect to Git.
-5. Select the GitHub repo containing this folder.
-6. Use these build settings:
+Create an R2 bucket for reports and add this Pages binding:
 
 ```text
-Framework preset: None
+Variable/binding name: REPORTS
+Service: R2 bucket
+Bucket: the bucket you created
+```
+
+## Build Settings
+
+If this folder is uploaded to GitHub as `Soil Dec Hub - Cloudflare Ready`, Cloudflare Pages should use:
+
+```text
+Root directory: Soil Dec Hub - Cloudflare Ready
 Build command: leave blank
 Build output directory: public
 ```
 
-Cloudflare will automatically pick up the `functions` folder as Pages Functions.
+## Deploy
 
-## Optional Cloudflare bindings
+This project is set up for GitHub auto-deploys. Upload this folder's contents into the GitHub folder that Cloudflare is connected to, then commit to `main`.
 
-Add these bindings in Cloudflare if you want persistence:
+For command-line deployment:
 
-```text
-KV binding name: SOIL_DEC_KV
-R2 binding name: SOIL_REPORTS_R2
+```powershell
+npm install
+npm run deploy
 ```
 
-Without these bindings, the page still loads, but settings/completed history/uploads will not be permanently stored.
+Cloudflare will ask you to log in if Wrangler is not already connected.
 
-## Important
+## Local Preview
 
-Do not put passwords, API keys, or private tokens into this folder.
-Use Cloudflare secrets/environment variables for sensitive values.
+```powershell
+npm install
+npm run dev
+```
+
+Then open the local Pages URL that Wrangler prints.

@@ -61,6 +61,12 @@ body {
   padding: 18px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -187,6 +193,23 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: rgba(59, 130, 246, 0.42);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
 .inline-action {
   min-height: 48px;
   border: 1px solid var(--border);
@@ -213,6 +236,14 @@ select:focus {
 
 .header-action {
   min-height: 42px;
+  border-radius: 14px;
+}
+
+.nav-action {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
   border-radius: 14px;
 }
 
@@ -251,6 +282,17 @@ select:focus {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+.notice {
+  margin-bottom: 14px;
+  border: 1px solid var(--warn-border);
+  border-radius: 16px;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .segmented {
@@ -442,7 +484,8 @@ select:focus {
 }
 
 .search-item,
-.run-item {
+.run-item,
+.admin-row {
   display: grid;
   gap: 5px;
   border: 1px solid var(--border);
@@ -450,6 +493,38 @@ select:focus {
   padding: 12px 14px;
   background: var(--panel-strong);
   box-shadow: var(--shadow-soft);
+}
+
+.admin-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-row {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.admin-form {
+  display: grid;
+  gap: 16px;
+}
+
+.checkbox-line {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.checkbox-line input {
+  width: 20px;
+  min-height: 20px;
+}
+
+.checkbox-line span {
+  margin: 0;
 }
 
 .search-item-head {
@@ -505,9 +580,21 @@ select:focus {
 @media (max-width: 760px) {
   .topbar,
   .brand,
+  .topbar-actions,
   .switch-block {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .topbar-actions {
+    width: 100%;
+  }
+
+  .nav-action,
+  .topbar-actions .status-pill {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 
   .brand img {
@@ -527,6 +614,10 @@ select:focus {
   .search-item-head {
     align-items: stretch;
     flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .admin-row {
     grid-template-columns: 1fr;
   }
 

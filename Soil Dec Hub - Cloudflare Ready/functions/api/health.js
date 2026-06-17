@@ -1,14 +1,21 @@
-import { DEFAULT_SETTINGS, HUB_VERSION, SITES, SUBMITTERS, json, readJsonValue } from "../_shared.js";
+import { getSettings, listSites, listSubmitters } from "../_shared/db.js";
+import { json } from "../_shared/http.js";
 
 export async function onRequestGet({ env }) {
-  const settings = await readJsonValue(env, "settings", DEFAULT_SETTINGS);
+  const [settings, submitters, sites] = await Promise.all([
+    getSettings(env),
+    listSubmitters(env),
+    listSites(env),
+  ]);
+
   return json({
     ok: true,
-    platform: "cloudflare-pages",
-    version: HUB_VERSION,
-    settings,
-    submitters: SUBMITTERS,
-    sites: SITES.map(({ id, name, mode }) => ({ id, name, mode })),
-    note: "Cloudflare-ready front-end is running. Sender backends still need migration.",
+    cloudflare: true,
+    version: env.HUB_VERSION || "2026.06.18.2-cloud-foundation",
+    databaseReady: settings.databaseReady && submitters.databaseReady && sites.databaseReady,
+    setupWarning: settings.error || submitters.error || sites.error || "",
+    settings: settings.settings,
+    submitters: submitters.rows,
+    sites: sites.rows,
   });
 }

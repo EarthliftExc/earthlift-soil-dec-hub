@@ -1,8 +1,12 @@
 {
-  "name": "earthlift-soil-dec-hub-cloudflare",
+  "name": "earthlift-soil-declaration-hub-cloudflare",
+  "version": "2026.06.18.2",
   "private": true,
-  "version": "2026.06.12",
   "scripts": {
-    "deploy:note": "echo Deploy through Cloudflare Pages Git integration with output directory public"
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public --project-name earthlift-soil-declaration-hub"
+  },
+  "devDependencies": {
+    "wrangler": "^4.20.0"
   }
 }

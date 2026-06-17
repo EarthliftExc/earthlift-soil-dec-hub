@@ -1,61 +1,31 @@
-import {
-  SITES,
-  completionKey,
-  json,
-  readJsonValue,
-  validateJob,
-  writeJsonValue,
-} from "../_shared.js";
-
-const siteById = new Map(SITES.map((site) => [site.id, site]));
+import { listSites, logSubmissionAttempt } from "../_shared/db.js";
+import { accessUser, json, readJson } from "../_shared/http.js";
 
 export async function onRequestPost({ request, env }) {
-  try {
-    const raw = await request.json();
-    const job = validateJob(raw);
-    const now = new Date().toISOString();
-    const existing = await readJsonValue(env, "completions", []);
-    const byKey = new Map(existing.map((item) => [item.key || completionKey(item.jobNumber, item.siteId), item]));
+  const payload = await readJson(request);
+  const selectedSites = Array.isArray(payload.selectedSites) ? payload.selectedSites : [];
+  const siteList = await listSites(env, { includeDisabled: true });
+  const siteMap = new Map(siteList.rows.map((site) => [site.id, site]));
+  const results = selectedSites.map((siteId) => {
+    const site = siteMap.get(siteId);
+    return {
+      siteId,
+      siteName: site?.name || siteId,
+      status: "Cloud Sender Needed",
+      summary:
+        "This cloud version can record the request, but this site's Cloudflare sender has not been built yet.",
+    };
+  });
 
-    const results = job.selectedSites.map((siteId) => {
-      const site = siteById.get(siteId) || { id: siteId, name: siteId, mode: "unknown" };
-      const status = "Queued";
-      const summary =
-        site.mode === "pdf-email-migration-required"
-          ? `${site.name} request captured. PDF/email backend still needs Cloudflare or Google Cloud migration.`
-          : `${site.name} request captured. Sender backend still needs Cloudflare or Google Cloud migration.`;
+  await logSubmissionAttempt(env, payload, accessUser(request), results);
 
-      byKey.set(completionKey(job.jobNumber, site.id), {
-        key: completionKey(job.jobNumber, site.id),
-        jobNumber: job.jobNumber,
-        siteId: site.id,
-        siteName: site.name,
-        principalContractor: job.principalContractor,
-        jobAddress: job.jobAddress,
-        volume: job.volume,
-        demolition: job.demolition,
-        status,
-        completedAt: now,
-        source: "cloudflare-ready-stub",
-        summary,
-      });
-
-      return { siteId: site.id, siteName: site.name, status, summary };
-    });
-
-    const completions = Array.from(byKey.values()).slice(-500);
-    const persisted = await writeJsonValue(env, "completions", completions);
-
-    return json({
-      ok: true,
-      status: "Queued",
-      results,
-      persisted,
-      summary: persisted
-        ? "Request captured in Cloudflare KV. Real sender backends still need migration."
-        : "Request captured for this response only. Add SOIL_DEC_KV to persist history.",
-    });
-  } catch (error) {
-    return json({ ok: false, summary: error.message || "Hub request failed." }, { status: 400 });
-  }
+  return json({
+    ok: true,
+    cloudflare: true,
+    databaseReady: siteList.databaseReady,
+    jobNumber: payload.jobNumber || "",
+    results,
+    summary:
+      "Saved the request for cloud tracking. Live sending will be enabled one site at a time as each cloud sender is rebuilt.",
+  });
 }

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Earthlift Soil Declaration Hub Admin</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="shortcut icon" type="image/png" href="assets/favicon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="assets/earthlift-logo.png" alt="Earthlift" />
+          <div class="brand-copy">
+            <h1>Hub Admin</h1>
+            <span class="version-pill">Cloud foundation</span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <a class="inline-action nav-action" href="index.html">Hub</a>
+          <div id="adminStatus" class="status-pill">Starting...</div>
+        </div>
+      </header>
+
+      <section class="panel admin-panel">
+        <div class="section-head">
+          <h2>Tip Sites</h2>
+          <button id="newSiteButton" class="inline-action header-action" type="button">New Site</button>
+        </div>
+        <div id="setupWarning" class="notice hidden"></div>
+        <div id="siteList" class="admin-list"></div>
+      </section>
+
+      <section class="panel admin-panel">
+        <div class="section-head">
+          <h2 id="editorTitle">Edit Site</h2>
+        </div>
+        <form id="siteForm" class="admin-form">
+          <div class="form-grid">
+            <label>
+              <span>Short code</span>
+              <input id="siteId" name="id" autocomplete="off" placeholder="example: urm" />
+            </label>
+            <label>
+              <span>Name</span>
+              <input id="siteName" name="name" required autocomplete="off" placeholder="Example: URM" />
+            </label>
+            <label>
+              <span>Type</span>
+              <select id="siteMethod" name="method">
+                <option>Webform</option>
+                <option>PDF email</option>
+                <option>Google Form</option>
+                <option>API</option>
+                <option>Manual</option>
+              </select>
+            </label>
+            <label>
+              <span>Cloud sender</span>
+              <select id="senderStatus" name="senderStatus">
+                <option value="planned">Planned</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+              </select>
+            </label>
+            <label>
+              <span>Sort order</span>
+              <input id="sortOrder" name="sortOrder" type="number" min="1" step="1" />
+            </label>
+            <label class="checkbox-line">
+              <input id="enabled" name="enabled" type="checkbox" checked />
+              <span>Show in hub</span>
+            </label>
+            <label class="wide">
+              <span>Login or form URL</span>
+              <input id="loginUrl" name="loginUrl" autocomplete="off" placeholder="https://..." />
+            </label>
+            <label class="wide">
+              <span>Notes for Alan / future developer</span>
+              <textarea id="notes" name="notes" rows="4" placeholder="What this site needs, who to contact, special rules..."></textarea>
+            </label>
+          </div>
+          <button id="saveSiteButton" class="send-button" type="submit">Save site</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

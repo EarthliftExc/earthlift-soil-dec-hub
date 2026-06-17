@@ -1,4 +1,4 @@
-const SITES = [
+let SITES = [
   ["harkaway", "Harkaway", "Webform"],
   ["urm", "URM", "Webform"],
   ["landfix", "Landfix", "Webform"],
@@ -228,7 +228,7 @@ function startSiteProgress(siteId, card) {
 function resultClass(status) {
   const lower = String(status || "").toLowerCase();
   if (lower.includes("fail")) return "failed";
-  if (lower.includes("skip")) return "skipped";
+  if (lower.includes("skip") || lower.includes("already") || lower.includes("needed") || lower.includes("planned")) return "skipped";
   return "done";
 }
 
@@ -236,8 +236,9 @@ function renderRunResults(results) {
   clearSiteResultStates();
   results.forEach((result) => {
     const state = resultClass(result.status);
-    const label = state === "done" ? "Completed" : result.status || "Done";
-    setSiteState(result.siteId, state, label, result.summary || "");
+    const detail = result.urmJobNumber ? `${result.summary || ""}\n${result.urmJobNumber}`.trim() : result.summary || "";
+    const label = state === "done" ? "Completed" : result.urmJobNumber ? `${result.status}\n${result.urmJobNumber}` : result.status || "Done";
+    setSiteState(result.siteId, state, label, detail);
   });
 }
 
@@ -265,12 +266,17 @@ async function uploadDaisyReportIfNeeded(data) {
 async function loadHealth() {
   try {
     const health = await api("/api/health");
+    SITES = (health.sites || []).map((site) => [site.id, site.name, site.method || "Webform"]);
     submitterId.innerHTML = health.submitters.map((profile) => `
       <option value="${escapeHtml(profile.id)}">${escapeHtml(profile.label)}</option>
     `).join("");
     renderSites();
     restorePreferences(health.settings);
-    setConnection("Hub ready", "ready");
+    if (health.databaseReady) {
+      setConnection("Hub ready", "ready");
+    } else {
+      setConnection("Cloud setup needed", "bad");
+    }
   } catch (error) {
     renderSites();
     setConnection("Hub offline", "bad");
@@ -321,8 +327,11 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify(submitData),
     });
     renderRunResults(result.results || []);
-    if ((result.results || []).some((item) => String(item.status).toLowerCase().includes("fail"))) {
+    const statuses = (result.results || []).map((item) => String(item.status || "").toLowerCase());
+    if (statuses.some((status) => status.includes("fail"))) {
       setConnection("Some failed", "bad");
+    } else if (statuses.some((status) => status.includes("needed") || status.includes("planned"))) {
+      setConnection("Cloud sender needed", "bad");
     } else {
       setConnection("Run complete", "ready");
       clearJobDetails();

@@ -1,12 +1,6 @@
-name = "earthlift-soil-dec-hub"
-compatibility_date = "2026-06-12"
+name = "earthlift-soil-declaration-hub"
+compatibility_date = "2026-06-15"
 pages_build_output_dir = "public"
 
-# Optional bindings to configure in Cloudflare dashboard or Wrangler:
-# [[kv_namespaces]]
-# binding = "SOIL_DEC_KV"
-# id = "replace-with-kv-namespace-id"
-
-# [[r2_buckets]]
-# binding = "SOIL_REPORTS_R2"
-# bucket_name = "replace-with-r2-bucket-name"
+[vars]
+HUB_VERSION = "2026.06.18.2-cloud-foundation"

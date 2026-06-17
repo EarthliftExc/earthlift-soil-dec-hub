@@ -1,19 +1,35 @@
-import { DEFAULT_SETTINGS, json, readJsonValue, writeJsonValue } from "../_shared.js";
+import { getSettings, saveSettings } from "../_shared/db.js";
+import { hasDatabase, json, readJson } from "../_shared/http.js";
 
 export async function onRequestGet({ env }) {
-  const settings = await readJsonValue(env, "settings", DEFAULT_SETTINGS);
-  return json({ ok: true, settings, persisted: Boolean(env.SOIL_DEC_KV) });
+  const result = await getSettings(env);
+  return json({
+    ok: true,
+    cloudflare: true,
+    databaseReady: result.databaseReady,
+    setupWarning: result.error || "",
+    settings: result.settings,
+  });
 }
 
 export async function onRequestPost({ request, env }) {
-  const raw = await request.json();
-  const settings = {
-    defaultSubmitter: raw.defaultSubmitter || "chris",
-    emailAction: raw.emailAction === "send" ? "send" : "draft",
-    esgSiteId: raw.esgSiteId || "85",
-    lteDestination: raw.lteDestination || "LTE Langwarrin - Soil",
-    machineSubmitter: raw.machineSubmitter || raw.defaultSubmitter || "chris",
-  };
-  const persisted = await writeJsonValue(env, "settings", settings);
-  return json({ ok: true, settings, persisted });
+  if (!hasDatabase(env)) {
+    return json(
+      {
+        ok: false,
+        cloudflare: true,
+        summary: "Cloudflare D1 database is not connected yet. Create the database and add the DB binding before saving settings.",
+      },
+      { status: 501 },
+    );
+  }
+
+  const settings = await readJson(request);
+  const result = await saveSettings(env, settings);
+  return json({
+    ok: true,
+    cloudflare: true,
+    databaseReady: true,
+    settings: result.settings,
+  });
 }
