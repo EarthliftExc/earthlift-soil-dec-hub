@@ -1,6 +1,10 @@
 name = "earthlift-soil-declaration-hub"
-compatibility_date = "2026-06-15"
+compatibility_date = "2026-06-18"
+compatibility_flags = [ "nodejs_compat" ]
 pages_build_output_dir = "public"
 
+[browser]
+binding = "BROWSER"
+
 [vars]
-HUB_VERSION = "2026.06.18.2-cloud-foundation"
+HUB_VERSION = "2026.06.18.3-urm-cloud"

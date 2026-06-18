@@ -34,9 +34,9 @@ export const defaultSites = [
 ].map((site, index) => ({
   ...site,
   enabled: true,
-  senderStatus: "planned",
-  loginUrl: "",
-  notes: "",
+  senderStatus: site.id === "urm" ? "active" : "planned",
+  loginUrl: site.id === "urm" ? "https://soil.urmaustralia.com.au/" : "",
+  notes: site.id === "urm" ? "First Cloudflare Browser Run sender." : "",
   sortOrder: (index + 1) * 10,
 }));
 

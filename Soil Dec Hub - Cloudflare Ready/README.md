@@ -9,7 +9,8 @@ This folder is the cloud version of the Earthlift Soil Declaration Hub. It is se
 - `admin.html` gives Alan a browser screen for editing tip sites once D1 is connected.
 - `/api/completions` can search completed declarations after D1 is connected.
 - `/api/upload-report` can store report PDFs after R2 is connected.
-- `/api/submit` records requests in D1 after D1 is connected, but live sending is still intentionally disabled until each cloud sender is rebuilt.
+- `/api/submit` can run URM through Cloudflare Browser Run once the `BROWSER` binding is connected.
+- Other tip sites still record requests only until their cloud senders are rebuilt.
 
 ## Important Limitation
 
@@ -19,19 +20,25 @@ The current production hub still sends declarations using Windows-only local too
 - local `T:\DRIVERS AND TIP CODES\Programs\Soil Dec` files
 - Outlook/PDF email automation
 
-Cloudflare cannot run those Windows desktop automations directly. The cloud version must rebuild each sender using Cloudflare-safe services, starting with URM.
+Cloudflare cannot run those Windows desktop automations directly. URM has been rebuilt first using Cloudflare Browser Run; the other senders still need the same treatment.
 
 ## Cloudflare Services Needed
 
 - Cloudflare Pages for the website and Functions.
 - Cloudflare D1 with binding name `DB`.
 - Cloudflare R2 with binding name `REPORTS`.
+- Cloudflare Browser Run with binding name `BROWSER`.
 - Cloudflare Access to limit the app to approved Earthlift users.
-- Cloudflare Browser Run later, for the actual site sender automation.
 
 ## Database Setup
 
 Create a D1 database, then run `migrations/0001_cloud_foundation.sql` against it.
+
+If the database was created before the URM cloud sender was added, also run:
+
+```text
+migrations/0002_urm_cloud_sender.sql
+```
 
 The Pages project needs this binding:
 
@@ -51,13 +58,24 @@ Service: R2 bucket
 Bucket: the bucket you created
 ```
 
+## Browser Run Setup
+
+The Pages project needs this binding:
+
+```text
+Variable/binding name: BROWSER
+Service: Browser Run / Browser Rendering
+```
+
+URM will fail with a clear message until this is connected.
+
 ## Build Settings
 
 If this folder is uploaded to GitHub as `Soil Dec Hub - Cloudflare Ready`, Cloudflare Pages should use:
 
 ```text
 Root directory: Soil Dec Hub - Cloudflare Ready
-Build command: leave blank
+Build command: npm install
 Build output directory: public
 ```
 

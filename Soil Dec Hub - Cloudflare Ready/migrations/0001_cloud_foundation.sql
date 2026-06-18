@@ -74,7 +74,7 @@ ON CONFLICT(id) DO NOTHING;
 
 INSERT INTO tip_sites (id, name, method, enabled, sender_status, login_url, notes, sort_order) VALUES
   ('harkaway', 'Harkaway', 'Webform', 1, 'planned', '', '', 10),
-  ('urm', 'URM', 'Webform', 1, 'planned', '', 'Build this sender first.', 20),
+  ('urm', 'URM', 'Webform', 1, 'active', 'https://soil.urmaustralia.com.au/', 'First Cloudflare Browser Run sender.', 20),
   ('landfix', 'Landfix', 'Webform', 1, 'planned', '', '', 30),
   ('daisys', 'Daisy''s', 'Webform', 1, 'planned', '', '', 40),
   ('esg', 'ESG', 'Webform', 1, 'planned', '', '', 50),

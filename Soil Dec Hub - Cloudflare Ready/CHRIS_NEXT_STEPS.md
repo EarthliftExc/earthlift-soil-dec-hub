@@ -69,13 +69,43 @@ Cloudflare should deploy automatically.
 9. Select the `soil-dec-reports` bucket.
 10. Save.
 
-## 5. Redeploy
+## 5. Connect Browser Run
+
+This is what lets URM run in Cloudflare instead of on your laptop.
+
+1. In Cloudflare, go to `Workers & Pages`.
+2. Open `earthlift-soil-dec-hub`.
+3. Go to `Settings`.
+4. Go to `Bindings`.
+5. Add a Browser Run / Browser Rendering binding.
+6. Use this variable name:
+
+   `BROWSER`
+
+7. Save.
+
+## 6. Check the Build Settings
+
+1. In Cloudflare, open `earthlift-soil-dec-hub`.
+2. Go to `Settings`.
+3. Go to `Pages configuration`.
+4. Set:
+
+   `Root directory: Soil Dec Hub - Cloudflare Ready`
+
+   `Build command: npm install`
+
+   `Build output directory: public`
+
+5. Save.
+
+## 7. Redeploy
 
 1. Go to `Deployments`.
 2. Click `Retry deployment`.
 3. Wait for `Success: Your site was deployed!`.
 
-## 6. Test
+## 8. Test
 
 1. Open:
 
@@ -88,7 +118,11 @@ Cloudflare should deploy automatically.
    `https://earthlift-soil-dec-hub.pages.dev`
 
 5. It should say `Hub ready`.
+6. Enter a small URM test job.
+7. Tick only `URM`.
+8. Send it.
+9. URM should show `Completed` or `Already Submitted` with a URX number if URM returns one.
 
 ## Important
 
-The cloud site is not ready for live submissions yet. The next build step is to rebuild the URM sender in Cloudflare Browser Run.
+URM is the first live cloud sender. The other tip sites still need to be rebuilt for Cloudflare.
