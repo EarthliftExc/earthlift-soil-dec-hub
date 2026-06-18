@@ -222,6 +222,7 @@ const URM_HELPER_SCRIPT = `
     startCapture() {
       window.__urmAlerts = [];
       window.__urmSaveResponses = [];
+      window.__urmNetworkResponses = [];
       window.alert = message => {
         window.__urmAlerts.push(String(message || ''));
       };
@@ -235,6 +236,12 @@ const URM_HELPER_SCRIPT = `
         };
         XMLHttpRequest.prototype.send = function(...args) {
           this.addEventListener('loadend', () => {
+            window.__urmNetworkResponses.push({
+              method: this.__urmMethod,
+              url: this.__urmUrl,
+              status: this.status,
+              responseText: String(this.responseText || '').slice(0, 1200),
+            });
             if (String(this.__urmUrl || '').includes('/Home/Edit')) {
               window.__urmSaveResponses.push({
                 method: this.__urmMethod,
@@ -381,6 +388,9 @@ const URM_HELPER_SCRIPT = `
     saveResponses() {
       return window.__urmSaveResponses || [];
     },
+    networkResponses() {
+      return window.__urmNetworkResponses || [];
+    },
   };
   return true;
 })()
@@ -493,6 +503,65 @@ async function evaluateUrm(page, expression) {
   return page.evaluate(`(() => ${expression})()`);
 }
 
+async function pageTextSnippet(page) {
+  const text = await page
+    .evaluate(() => document.body?.innerText || document.body?.textContent || "")
+    .catch(() => "");
+  return String(text || "").replace(/\s+/g, " ").trim().slice(0, 800);
+}
+
+async function urmNetworkSnippet(page) {
+  const responses = await evaluateUrm(page, "__urm.networkResponses()").catch(() => []);
+  return responses
+    .slice(-4)
+    .map((response) => {
+      const body = String(response.responseText || "").replace(/\s+/g, " ").trim().slice(0, 400);
+      return `${response.status || "?"} ${response.url || ""} ${body}`.trim();
+    })
+    .filter(Boolean)
+    .join(" | ")
+    .slice(0, 1200);
+}
+
+async function waitForUrmDeclarationsList(page) {
+  try {
+    await page.waitForFunction(
+      () => {
+        const text = document.body?.innerText || "";
+        const hasList = text.includes("New Soil Declaration") || Boolean(document.querySelector("#soils-table"));
+        const hasError = Boolean(
+          document.querySelector(".alert-danger, .validation-summary-errors, [role='alert']"),
+        );
+        return hasList || hasError || /recaptcha|captcha|robot|bot|try again|not registered/i.test(text);
+      },
+      { timeout: 120000 },
+    );
+  } catch (error) {
+    const snippet = await pageTextSnippet(page);
+    const network = await urmNetworkSnippet(page);
+    throw new Error(
+      `URM did not show the declarations list after entering Alan's email. Page says: ${snippet || "nothing useful"}. Background response: ${network || "none captured"}`,
+    );
+  }
+
+  const hasList = await page
+    .evaluate(() => {
+      const text = document.body?.innerText || "";
+      return text.includes("New Soil Declaration") || Boolean(document.querySelector("#soils-table"));
+    })
+    .catch(() => false);
+  const snippet = await pageTextSnippet(page);
+  if (!hasList && /recaptcha|captcha|robot|bot|try again|not registered|error/i.test(snippet)) {
+    throw new Error(`URM did not allow the cloud browser through. Page says: ${snippet}`);
+  }
+  if (!hasList) {
+    const network = await urmNetworkSnippet(page);
+    throw new Error(
+      `URM loaded a page, but not the declaration list. Page says: ${snippet || "nothing useful"}. Background response: ${network || "none captured"}`,
+    );
+  }
+}
+
 export async function runUrmSubmission(env, rawPayload) {
   if (!env?.BROWSER) {
     throw new Error("Cloudflare Browser Run is not connected. Add a Browser binding named BROWSER before URM can submit.");
@@ -542,12 +611,7 @@ export async function runUrmSubmission(env, rawPayload) {
       { recaptchaSiteKey: RECAPTCHA_SITE_KEY },
     );
 
-    await waitFor(
-      page,
-      `document.querySelector('#soils-table-container') && (document.querySelector('#soils-table-container').innerText || '').includes('New Soil Declaration')`,
-      "URM soil declarations list",
-      60000,
-    );
+    await waitForUrmDeclarationsList(page);
     await page.evaluate(URM_HELPER_SCRIPT);
 
     const existing = await evaluateUrm(
