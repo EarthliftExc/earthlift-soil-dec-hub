@@ -237,7 +237,16 @@ function renderRunResults(results) {
   results.forEach((result) => {
     const state = resultClass(result.status);
     const detail = result.urmJobNumber ? `${result.summary || ""}\n${result.urmJobNumber}`.trim() : result.summary || "";
-    const label = state === "done" ? "Completed" : result.urmJobNumber ? `${result.status}\n${result.urmJobNumber}` : result.status || "Done";
+    const label =
+      state === "done"
+        ? result.urmJobNumber
+          ? `Completed\n${result.urmJobNumber}`
+          : "Completed"
+        : result.urmJobNumber
+          ? `${result.status}\n${result.urmJobNumber}`
+          : detail
+            ? `${result.status || "Needs attention"}\n${detail}`
+            : result.status || "Done";
     setSiteState(result.siteId, state, label, detail);
   });
 }
