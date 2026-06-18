@@ -1,4 +1,4 @@
-import { launch } from "@cloudflare/playwright";
+import puppeteer from "@cloudflare/puppeteer";
 
 const SITE_URL = "https://soil.urmaustralia.com.au/";
 const RECAPTCHA_SITE_KEY = "6LeoDvsnAAAAAMc_4X-EyXhFK45nDqVPjQZnMijC";
@@ -484,7 +484,7 @@ function buildConfirmation(saveResult, payload) {
 }
 
 async function waitFor(page, expression, label, timeoutMs = 45000) {
-  await page.waitForFunction(expression, undefined, { timeout: timeoutMs }).catch((error) => {
+  await page.waitForFunction(expression, { timeout: timeoutMs }).catch((error) => {
     throw new Error(`Timed out waiting for ${label}. ${error.message || ""}`.trim());
   });
 }
@@ -501,15 +501,14 @@ export async function runUrmSubmission(env, rawPayload) {
   const payload = sanitizePayload(rawPayload);
   const address = parseAddress(payload.jobAddress);
   const today = formatToday();
-  const browser = await launch(env.BROWSER, { keep_alive: 120000 });
+  const browser = await puppeteer.launch(env.BROWSER, { keep_alive: 120000 });
 
   try {
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    });
-    const page = await context.newPage();
+    const page = await browser.newPage();
     page.setDefaultTimeout(60000);
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    );
 
     await page.goto(SITE_URL, { waitUntil: "domcontentloaded" });
     await waitFor(page, `document.body && document.body.innerText.includes('URM Soil')`, "URM home page");

@@ -20,7 +20,7 @@ The current production hub still sends declarations using Windows-only local too
 - local `T:\DRIVERS AND TIP CODES\Programs\Soil Dec` files
 - Outlook/PDF email automation
 
-Cloudflare cannot run those Windows desktop automations directly. URM has been rebuilt first using Cloudflare Browser Run; the other senders still need the same treatment.
+Cloudflare cannot run those Windows desktop automations directly. URM has been rebuilt first using Cloudflare Browser Run and Cloudflare's Puppeteer package; the other senders still need the same treatment.
 
 ## Cloudflare Services Needed
 
