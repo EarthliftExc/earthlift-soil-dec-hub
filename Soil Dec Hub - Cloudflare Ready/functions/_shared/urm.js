@@ -286,12 +286,22 @@ const URM_HELPER_SCRIPT = `
       return true;
     },
     async openNewDeclaration() {
-      const links = Array.from(document.querySelectorAll('.modal-link, button, a'));
-      const link = links.find(element => norm(element.getAttribute('data-action')) === 'new') ||
-        links.find(element => norm(element.innerText || element.value || '').includes('new soil declaration')) ||
-        links.find(element => norm(element.innerText || element.value || '').includes('new'));
-      if (!link) throw new Error('URM New Soil Declaration button was not found after login.');
-      const targetUrl = link.getAttribute('data-targeturl');
+      const clickable = Array.from(document.querySelectorAll('.modal-link, button, a, input[type="button"], input[type="submit"], [role="button"], .btn, [onclick], [data-targeturl]'));
+      const allElements = Array.from(document.querySelectorAll('body *'));
+      const textFor = element => norm(element.innerText || element.value || element.textContent || element.getAttribute('aria-label') || element.title || '');
+      const byText = element => textFor(element).includes('new soil declaration') || textFor(element) === 'new';
+      const link = clickable.find(element => norm(element.getAttribute('data-action')) === 'new') ||
+        clickable.find(byText) ||
+        allElements.find(element => byText(element))?.closest('.modal-link, button, a, input[type="button"], input[type="submit"], [role="button"], .btn, [onclick], [data-targeturl]');
+      if (!link) {
+        const candidates = clickable
+          .map(element => textFor(element))
+          .filter(Boolean)
+          .slice(0, 25)
+          .join(' | ');
+        throw new Error('URM New Soil Declaration button was not found after login. Clickable text seen: ' + (candidates || 'none'));
+      }
+      const targetUrl = link.getAttribute('data-targeturl') || link.closest('[data-targeturl]')?.getAttribute('data-targeturl');
       if (targetUrl) {
         const response = await fetch(targetUrl, { credentials: 'same-origin' });
         if (!response.ok) throw new Error('URM New Soil Declaration form returned ' + response.status);
