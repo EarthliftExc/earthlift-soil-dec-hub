@@ -255,6 +255,24 @@ const URM_HELPER_SCRIPT = `
         };
         window.__urmXhrPatched = true;
       }
+      if (!window.__urmFetchPatched && window.fetch) {
+        const originalFetch = window.fetch;
+        window.fetch = async function(input, init = {}) {
+          const url = typeof input === 'string' ? input : input?.url || '';
+          const method = init?.method || input?.method || 'GET';
+          const response = await originalFetch.apply(this, arguments);
+          response.clone().text().then(text => {
+            window.__urmNetworkResponses.push({
+              method,
+              url,
+              status: response.status,
+              responseText: String(text || '').slice(0, 1200),
+            });
+          }).catch(() => {});
+          return response;
+        };
+        window.__urmFetchPatched = true;
+      }
       return true;
     },
     text(candidates, value, optional = false) {
@@ -537,8 +555,8 @@ async function waitForUrmDeclarationsList(page) {
   try {
     await page.waitForFunction(
       () => {
-        const text = document.body?.innerText || "";
-        const hasList = text.includes("New Soil Declaration") || Boolean(document.querySelector("#soils-table"));
+        const text = document.querySelector("#soils-table-container")?.innerText || document.body?.innerText || "";
+        const hasList = text.includes("New Soil Declaration");
         const hasError = Boolean(
           document.querySelector(".alert-danger, .validation-summary-errors, [role='alert']"),
         );
@@ -556,8 +574,8 @@ async function waitForUrmDeclarationsList(page) {
 
   const hasList = await page
     .evaluate(() => {
-      const text = document.body?.innerText || "";
-      return text.includes("New Soil Declaration") || Boolean(document.querySelector("#soils-table"));
+      const text = document.querySelector("#soils-table-container")?.innerText || document.body?.innerText || "";
+      return text.includes("New Soil Declaration");
     })
     .catch(() => false);
   const snippet = await pageTextSnippet(page);
